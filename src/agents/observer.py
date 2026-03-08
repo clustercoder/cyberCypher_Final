@@ -101,6 +101,8 @@ class ObserverAgent:
 
         self.active_anomalies: dict[str, Anomaly] = {}
         self._anomaly_history: list[Anomaly] = []
+        # Max MC dropout uncertainty score from the most recent detect() call.
+        self._last_uncertainty_score: float = 0.0
 
     def train_detectors(self, baseline_df: pd.DataFrame) -> None:
         """Train ensemble components and initialize forecasting models."""
@@ -125,6 +127,7 @@ class ObserverAgent:
 
         self._warm_ewma_detectors(df)
         self._init_series_forecasters(df)
+        self._train_gnn(df)
 
     def ingest(self, telemetry: dict[str, Any]) -> None:
         """Ingest one timestep from simulation engine output."""
@@ -144,6 +147,7 @@ class ObserverAgent:
         if not self.history:
             return []
 
+        self._last_uncertainty_score = 0.0
         latest = self.history[-1]
         observed = self.ensemble.detect_all(
             {
@@ -201,6 +205,10 @@ class ObserverAgent:
             logger.warning("GNN detection failed: {}", exc)
             return []
 
+    def get_forecast_uncertainty_score(self) -> float:
+        """Return the max MC dropout uncertainty score from the most recent detect() call."""
+        return self._last_uncertainty_score
+
     def get_active_anomalies(self) -> list[Anomaly]:
         """Return currently active anomalies."""
         anomalies = sorted(
@@ -248,6 +256,53 @@ class ObserverAgent:
             "worst_entity": worst_entity,
             "overall_health": overall_health,
         }
+
+    def _train_gnn(self, baseline_df: pd.DataFrame) -> None:
+        """Train GNN anomaly detector using pseudo-labels derived from threshold rules."""
+        if self.gnn_detector is None or not self.gnn_detector.is_available():
+            return
+
+        node_df = baseline_df[baseline_df["entity_type"] == "node"]
+        if node_df.empty:
+            logger.warning("No node rows in baseline_df; skipping GNN training.")
+            return
+
+        node_feature_seqs: list[dict[str, dict[str, float]]] = []
+        label_seqs: list[dict[str, int]] = []
+
+        timestamps = sorted(node_df["timestamp"].unique())
+        for ts in timestamps:
+            ts_df = node_df[node_df["timestamp"] == ts]
+            snapshot: dict[str, dict[str, float]] = {}
+            labels: dict[str, int] = {}
+            for row in ts_df.itertuples(index=False):
+                node_id = str(getattr(row, "entity_id"))
+                metrics: dict[str, float] = {}
+                for col in ("cpu_pct", "memory_pct", "temperature_c", "buffer_drops",
+                            "latency_ms", "packet_loss_pct", "utilization_pct"):
+                    val = getattr(row, col, None)
+                    if val is not None and not pd.isna(val):
+                        metrics[col] = float(val)
+                snapshot[node_id] = metrics
+                is_anomaly = (
+                    metrics.get("cpu_pct", 0.0) > 85.0
+                    or metrics.get("memory_pct", 0.0) > 80.0
+                    or metrics.get("temperature_c", 0.0) > 70.0
+                    or metrics.get("buffer_drops", 0.0) > 100.0
+                )
+                labels[node_id] = 1 if is_anomaly else 0
+            node_feature_seqs.append(snapshot)
+            label_seqs.append(labels)
+
+        if not node_feature_seqs:
+            return
+
+        try:
+            loss_history = self.gnn_detector.train(node_feature_seqs, label_seqs, epochs=10)
+            if loss_history:
+                logger.info("GNN training complete. final_loss={:.4f}", loss_history[-1])
+        except Exception as exc:
+            logger.warning("GNN training failed: {}", exc)
 
     def _validate_baseline_df(self, baseline_df: pd.DataFrame) -> None:
         missing = _REQUIRED_BASELINE_COLUMNS - set(baseline_df.columns)
@@ -408,6 +463,14 @@ class ObserverAgent:
                 if isinstance(model, LSTMForecaster):
                     if len(recent) < model.seq_length:
                         continue
+                    # Collect MC dropout uncertainty score across all LSTM series.
+                    try:
+                        unc_result = model.predict_with_uncertainty(recent, n_samples=20)
+                        unc_score = float(unc_result.get("uncertainty_score", 0.0))
+                        if unc_score > self._last_uncertainty_score:
+                            self._last_uncertainty_score = unc_score
+                    except Exception:
+                        pass
                     forecast = model.predict_congestion(recent, threshold=threshold)
                     is_fallback = False
                 else:

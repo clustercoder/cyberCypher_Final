@@ -10,10 +10,11 @@ from src.simulator.topology import NetworkTopology
 from src.utils.logger import logger
 
 try:
-    from src.models.rl_traffic_engineering import RLTrafficEngineer
+    from src.models.rl_traffic_engineering import RLTrafficEngineer, _DEFAULT_RL_MODEL_PATH
     _RL_AVAILABLE = True
 except ImportError:
     _RL_AVAILABLE = False
+    _DEFAULT_RL_MODEL_PATH = "models/rl_traffic_engineer"
 
 try:
     from src.simulator.digital_twin import DigitalTwin
@@ -86,7 +87,13 @@ class DeciderAgent:
             try:
                 link_ids = [f"{u}-{v}" for u, v in topology._graph.edges()]
                 self.rl_engineer = RLTrafficEngineer(link_ids=link_ids)  # type: ignore[assignment]
-                logger.info("RLTrafficEngineer initialized.")
+                if self.rl_engineer.load(_DEFAULT_RL_MODEL_PATH):
+                    logger.info("RLTrafficEngineer initialized with pre-trained model.")
+                else:
+                    logger.info(
+                        "RLTrafficEngineer initialized; no saved model at {} — using heuristic fallback.",
+                        _DEFAULT_RL_MODEL_PATH,
+                    )
             except Exception as exc:
                 logger.warning("RLTrafficEngineer init failed: {}", exc)
 

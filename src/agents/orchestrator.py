@@ -143,10 +143,19 @@ class AgentOrchestrator:
                     float(rl_suggestion.get("confidence", 0.0)),
                 )
 
-        # Uncertainty-based escalation: if top action confidence is very low,
-        # override to escalate rather than auto-act
+        # Uncertainty-based escalation: inject MC dropout score from observer,
+        # then check if it exceeds the escalation threshold.
         if top_action is not None:
-            uncertainty_score = float(top_action.parameters.get("uncertainty_score", 0.0))
+            uncertainty_score = self.observer.get_forecast_uncertainty_score()
+            if uncertainty_score > 0.0:
+                top_action = top_action.model_copy(
+                    update={
+                        "parameters": {
+                            **dict(top_action.parameters),
+                            "uncertainty_score": uncertainty_score,
+                        }
+                    }
+                )
             if self.decider.should_escalate_for_uncertainty(uncertainty_score):
                 logger.info(
                     "High forecast uncertainty ({:.3f}) — escalating action to require approval.",
@@ -337,6 +346,12 @@ class AgentOrchestrator:
     def stop(self) -> None:
         """Stop orchestration loop."""
         self.is_running = False
+
+    def shutdown(self) -> None:
+        """Gracefully stop the orchestrator and flush all persistent data."""
+        self.stop()
+        self.learner.shutdown()
+        logger.info("AgentOrchestrator shut down.")
 
     def approve_action(self, action_id: str) -> bool:
         """Approve a pending action and execute immediately."""

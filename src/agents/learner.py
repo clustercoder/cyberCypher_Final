@@ -349,6 +349,14 @@ class LearnerAgent:
             "last_retrain_trigger": self._retrain_triggers[-1] if self._retrain_triggers else None,
         }
 
+    def shutdown(self) -> None:
+        """Flush accumulated LLM training data to disk on graceful shutdown."""
+        path = self.export_llm_training_data()
+        if path:
+            logger.info("LLM training data exported to {} on shutdown.", path)
+        else:
+            logger.debug("LearnerAgent shutdown: no LLM training data to export.")
+
     def _scenario_type(self, hypothesis: Hypothesis) -> str:
         text = " ".join([hypothesis.root_cause, hypothesis.description, *hypothesis.evidence]).lower()
         if "ddos" in text or "surge" in text:
