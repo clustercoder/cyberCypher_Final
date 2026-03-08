@@ -54,10 +54,12 @@ _REQUIRED_BASELINE_COLUMNS: set[str] = {"timestamp", "entity_id", "entity_type"}
 
 def _load_forecasting():
     """Import forecasting classes. LSTMForecaster requires torch; falls back gracefully."""
-    from src.models.forecasting import FallbackForecaster  # noqa: PLC0415
+    from src.models.forecasting import FallbackForecaster, _TORCH_AVAILABLE  # noqa: PLC0415
     try:
         from src.models.forecasting import LSTMForecaster  # noqa: PLC0415
     except ImportError:
+        LSTMForecaster = FallbackForecaster  # type: ignore[misc,assignment]
+    if not _TORCH_AVAILABLE:
         LSTMForecaster = FallbackForecaster  # type: ignore[misc,assignment]
     return FallbackForecaster, LSTMForecaster
 
