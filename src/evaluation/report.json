@@ -1,0 +1,163 @@
+{
+  "generated_at": "2026-03-07T23:43:39.082351+00:00",
+  "dataset": {
+    "seed": 42,
+    "total_hours": 24,
+    "train_hours": 16,
+    "test_hours": 8,
+    "n_scenarios_test": 5
+  },
+  "detection": {
+    "tp": 290,
+    "fp": 182,
+    "fn": 0,
+    "tn": 9,
+    "precision": 0.6144,
+    "recall": 1.0,
+    "f1": 0.7612,
+    "mean_mttd_seconds": 0.0,
+    "scenarios_detected": 5,
+    "scenarios_total": 5,
+    "per_scenario_mttd": [
+      {
+        "scenario_id": "b65a93d1-2d2c-4296-99dd-0bcf1deb65d5",
+        "scenario_type": "congestion_cascade",
+        "detected": true,
+        "mttd_seconds": 0.0
+      },
+      {
+        "scenario_id": "b6849778-6d5c-4e82-8ebd-34c13949f454",
+        "scenario_type": "hardware_degradation",
+        "detected": true,
+        "mttd_seconds": 0.0
+      },
+      {
+        "scenario_id": "4244dff8-7d6f-401b-aed1-19b63842274c",
+        "scenario_type": "ddos_surge",
+        "detected": true,
+        "mttd_seconds": 0.0
+      },
+      {
+        "scenario_id": "7feee2bc-0c27-4d81-b877-1a4cd5855933",
+        "scenario_type": "misconfiguration",
+        "detected": true,
+        "mttd_seconds": 0.0
+      },
+      {
+        "scenario_id": "6b76ede7-aea9-43ab-b3d6-5b5d11123ab5",
+        "scenario_type": "fiber_cut",
+        "detected": true,
+        "mttd_seconds": 0.0
+      }
+    ]
+  },
+  "root_cause_analysis": {
+    "rca_accuracy": 0.0,
+    "correct_rca": 0,
+    "scenarios_with_detections": 5,
+    "per_scenario_rca": [
+      {
+        "scenario_id": "b65a93d1-2d2c-4296-99dd-0bcf1deb65d5",
+        "scenario_type": "congestion_cascade",
+        "gt_root_cause": "AGG1-PEER1",
+        "top_hypothesis": "CR1-CR2_utilization",
+        "top_confidence": 0.5026,
+        "match": false,
+        "note": null
+      },
+      {
+        "scenario_id": "b6849778-6d5c-4e82-8ebd-34c13949f454",
+        "scenario_type": "hardware_degradation",
+        "gt_root_cause": "CR2",
+        "top_hypothesis": "CR1_cpu",
+        "top_confidence": 0.4631,
+        "match": false,
+        "note": null
+      },
+      {
+        "scenario_id": "4244dff8-7d6f-401b-aed1-19b63842274c",
+        "scenario_type": "ddos_surge",
+        "gt_root_cause": "EDGE4",
+        "top_hypothesis": "PEER1_cpu",
+        "top_confidence": 0.4587,
+        "match": false,
+        "note": null
+      },
+      {
+        "scenario_id": "7feee2bc-0c27-4d81-b877-1a4cd5855933",
+        "scenario_type": "misconfiguration",
+        "gt_root_cause": "AGG3-AGG4",
+        "top_hypothesis": "CR1_cpu",
+        "top_confidence": 0.4576,
+        "match": false,
+        "note": null
+      },
+      {
+        "scenario_id": "6b76ede7-aea9-43ab-b3d6-5b5d11123ab5",
+        "scenario_type": "fiber_cut",
+        "gt_root_cause": "AGG4-EDGE4",
+        "top_hypothesis": "CR1_cpu",
+        "top_confidence": 0.4614,
+        "match": false,
+        "note": null
+      }
+    ]
+  },
+  "decision": {
+    "mean_mttm_seconds": 69.0,
+    "z3_pass_rate": 0.6,
+    "note": "MTTM values are simulated estimates; real values require live action logs",
+    "per_scenario_decisions": [
+      {
+        "scenario_id": "b65a93d1-2d2c-4296-99dd-0bcf1deb65d5",
+        "scenario_type": "congestion_cascade",
+        "detected": true,
+        "decision": "reroute_traffic",
+        "autonomy_level": "AUTOMATIC_CANARY",
+        "mttm_seconds": 45.0,
+        "z3_verified": true,
+        "note": "simulated \u2014 no live action log available"
+      },
+      {
+        "scenario_id": "b6849778-6d5c-4e82-8ebd-34c13949f454",
+        "scenario_type": "hardware_degradation",
+        "detected": true,
+        "decision": "failover_node",
+        "autonomy_level": "HUMAN_APPROVAL",
+        "mttm_seconds": 120.0,
+        "z3_verified": false,
+        "note": "simulated \u2014 no live action log available"
+      },
+      {
+        "scenario_id": "4244dff8-7d6f-401b-aed1-19b63842274c",
+        "scenario_type": "ddos_surge",
+        "detected": true,
+        "decision": "rate_limit_flow",
+        "autonomy_level": "AUTOMATIC",
+        "mttm_seconds": 30.0,
+        "z3_verified": true,
+        "note": "simulated \u2014 no live action log available"
+      },
+      {
+        "scenario_id": "7feee2bc-0c27-4d81-b877-1a4cd5855933",
+        "scenario_type": "misconfiguration",
+        "detected": true,
+        "decision": "rollback_config",
+        "autonomy_level": "AUTOMATIC_CANARY",
+        "mttm_seconds": 60.0,
+        "z3_verified": true,
+        "note": "simulated \u2014 no live action log available"
+      },
+      {
+        "scenario_id": "6b76ede7-aea9-43ab-b3d6-5b5d11123ab5",
+        "scenario_type": "fiber_cut",
+        "detected": true,
+        "decision": "activate_backup_path",
+        "autonomy_level": "HUMAN_APPROVAL",
+        "mttm_seconds": 90.0,
+        "z3_verified": false,
+        "note": "simulated \u2014 no live action log available"
+      }
+    ]
+  }
+}

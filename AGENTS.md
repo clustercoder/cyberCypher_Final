@@ -1,68 +1,16 @@
-# CLAUDE.md
-
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 # CyberCypher 5.0 — Agentic AI for Autonomous Network Operations
 
 ## Project Overview
 Agentic AI system for autonomous ISP network operations with observe→reason→decide→act→learn loop.
 An "AI Network Guardian" that continuously monitors a simulated ISP, detects anomalies, reasons about root causes using causal inference, verifies safety of actions mathematically, and learns from outcomes.
 
-## IMPORTANT: Use pgmpy (NOT causalnex) for causal inference — causalnex is incompatible with Python 3.11+.
-
-## Commands
-
-### Backend
-```bash
-# Install dependencies
-pip install -e .
-# or
-pip install -r requirements.txt
-
-# Run the FastAPI server (starts simulator + agent loop + WebSocket)
-uvicorn src.api.main:app --reload --port 8000
-
-# Run the CLI demo (hackathon demo, no UI needed)
-python demo.py
-
-# Generate evaluation dataset
-python -m src.evaluation.generate_dataset
-
-# Run evaluation (precision, recall, F1, MTTD, MTTM)
-python -m src.evaluation.evaluate
-```
-
-### Frontend
-```bash
-cd src/ui/dashboard
-npm install
-npm run dev      # dev server at http://localhost:5173
-npm run build    # production build
-```
-
-### Tests
-```bash
-# Run all tests
-pytest
-
-# Run a single test file
-pytest tests/test_observer_agent.py -v
-
-# Run with coverage
-pytest --cov=src tests/
-```
-
-### Linting / Type-checking
-```bash
-ruff check src/
-mypy src/
-```
+## USING pgmpy INSTEAD OF causalnex DUE TO PYTHON VERSION INCOMAPTIBILITY ISSUES.
 
 ## Tech Stack
 - **Backend:** Python 3.11+, FastAPI, WebSockets
 - **Agent Framework:** LangGraph (stateful agent orchestration with observe→reason→decide→act→learn graph)
 - **LLM:** OpenAI GPT-4o (via OPENAI_API_KEY in .env) — used for reasoning, hypothesis formation, debate agents, and explanations
-- **Causal Inference:** pgmpy (NOTEARS/BayesianNetwork), networkx (topology graph)
+- **Causal Inference:** causalnex (NOTEARS algorithm), networkx (topology graph)
 - **Safety Verification:** z3-solver (formal proof that actions are safe before execution)
 - **Anomaly Detection:** scikit-learn IsolationForest, EWMA statistical detector, threshold-based rules
 - **Traffic Forecasting:** LSTM (PyTorch) for predicting congestion before it happens, Prophet as fallback
@@ -73,7 +21,7 @@ mypy src/
 - **Streaming:** WebSockets for real-time telemetry and agent event streaming to UI
 
 ## Key Differentiators (What Makes Us Win)
-1. **Causal Counterfactual Digital Twin** — pgmpy + PC/NOTEARS algorithm. Agent reasons causally ("root cause of latency on link X is congestion on upstream link Y triggered by BGP change 12 min ago"). Runs counterfactual simulations before acting ("if I reroute A→B, what happens to C, D, E?").
+1. **Causal Counterfactual Digital Twin** — causalnex + PC/NOTEARS algorithm. Agent reasons causally ("root cause of latency on link X is congestion on upstream link Y triggered by BGP change 12 min ago"). Runs counterfactual simulations before acting ("if I reroute A→B, what happens to C, D, E?").
 2. **Formal Safety Verification with Z3** — Every autonomous action is mathematically proven safe against invariants (no link >85% utilization after reroute, rollback path must exist, blast radius caps). "Provable safety guarantees."
 3. **Multi-Agent Adversarial Debate** — High-risk decisions trigger a panel: ReliabilityAgent vs PerformanceAgent vs CostSLAAgent, judged by a JudgeAgent. Debate transcript = explainability layer.
 4. **LSTM Traffic Forecasting** — Predicts congestion 10-30 minutes ahead so the agent can act proactively, not reactively. Trained on synthetic diurnal traffic patterns.
@@ -100,7 +48,7 @@ src/
     forecasting.py     — LSTM traffic forecasting model (PyTorch) + Prophet fallback
     schemas.py         — Pydantic models for all data types
   causal/              — Causal graph + counterfactual engine
-    causal_engine.py   — pgmpy NOTEARS, root cause analysis, do-calculus counterfactuals
+    causal_engine.py   — causalnex NOTEARS, root cause analysis, do-calculus counterfactuals
   safety/              — Z3 safety constraints
     z3_verifier.py     — Formal verification of actions against safety invariants
   api/                 — FastAPI endpoints + WebSocket handlers

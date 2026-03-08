@@ -1,0 +1,57 @@
+
+======================================================================
+  CyberCypher 5.0 — Evaluation Report
+  Generated: 2026-03-07T23:43:39.082351+00:00
+======================================================================
+
+  Dataset
+  -------
+  Seed         : 42
+  Train period : 16h
+  Test  period : 8h
+  Test scenarios: 5
+
+  Part 1 — Anomaly Detection
+  ---------------------------
+  TP=290  FP=182  FN=0  TN=9
+  Precision : 61.4%
+  Recall    : 100.0%
+  F1 Score  : 76.1%
+  Mean MTTD : 0.0s
+  Scenarios detected: 5 / 5
+
+  Scenario ID    Type                   Detected      MTTD
+  ----------------------------------------------------------
+  b65a93d1-2d2c-4296-99dd-0bcf1deb65d5 congestion_cascade          yes      0.0s
+  b6849778-6d5c-4e82-8ebd-34c13949f454 hardware_degradation        yes      0.0s
+  4244dff8-7d6f-401b-aed1-19b63842274c ddos_surge                  yes      0.0s
+  7feee2bc-0c27-4d81-b877-1a4cd5855933 misconfiguration            yes      0.0s
+  6b76ede7-aea9-43ab-b3d6-5b5d11123ab5 fiber_cut                   yes      0.0s
+
+  Part 2 — Root Cause Analysis
+  ------------------------------
+  RCA Accuracy : 0.0%  (0 / 5 scenarios with detections)
+
+  Scenario ID    Type                   GT Entity       Match  Top Hypothesis
+  --------------------------------------------------------------------------------
+  b65a93d1-2d2c-4296-99dd-0bcf1deb65d5 congestion_cascade     AGG1-PEER1         no  CR1-CR2_utilization
+  b6849778-6d5c-4e82-8ebd-34c13949f454 hardware_degradation   CR2                no  CR1_cpu
+  4244dff8-7d6f-401b-aed1-19b63842274c ddos_surge             EDGE4              no  PEER1_cpu
+  7feee2bc-0c27-4d81-b877-1a4cd5855933 misconfiguration       AGG3-AGG4          no  CR1_cpu
+  6b76ede7-aea9-43ab-b3d6-5b5d11123ab5 fiber_cut              AGG4-EDGE4         no  CR1_cpu
+
+  Part 3 — Decision Performance (simulated)
+  ------------------------------------------
+  Mean MTTM    : 69.0s
+  Z3 Pass Rate : 60.0%
+  Note: MTTM values are simulated estimates; real values require live action logs
+
+  Scenario ID    Type                   Decision               Autonomy             MTTM  Z3
+  --------------------------------------------------------------------------------------------------
+  b65a93d1-2d2c-4296-99dd-0bcf1deb65d5 congestion_cascade     reroute_traffic        AUTOMATIC_CANARY    45.0s  pass
+  b6849778-6d5c-4e82-8ebd-34c13949f454 hardware_degradation   failover_node          HUMAN_APPROVAL     120.0s  fail
+  4244dff8-7d6f-401b-aed1-19b63842274c ddos_surge             rate_limit_flow        AUTOMATIC           30.0s  pass
+  7feee2bc-0c27-4d81-b877-1a4cd5855933 misconfiguration       rollback_config        AUTOMATIC_CANARY    60.0s  pass
+  6b76ede7-aea9-43ab-b3d6-5b5d11123ab5 fiber_cut              activate_backup_path   HUMAN_APPROVAL      90.0s  fail
+
+======================================================================

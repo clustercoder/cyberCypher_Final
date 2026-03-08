@@ -13,6 +13,7 @@ numpy
 pandas
 scikit-learn
 torch
+torch-geometric
 matplotlib
 seaborn
 pydantic
@@ -21,3 +22,11 @@ python-dotenv
 httpx
 faiss-cpu
 prophet
+stable-baselines3[extra]
+gymnasium
+transformers
+peft
+trl
+bitsandbytes
+accelerate
+rich
