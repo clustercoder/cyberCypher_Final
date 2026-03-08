@@ -53,8 +53,12 @@ _REQUIRED_BASELINE_COLUMNS: set[str] = {"timestamp", "entity_id", "entity_type"}
 
 
 def _load_forecasting():
-    """Lazy import of torch-dependent forecasting classes to avoid blocking startup."""
-    from src.models.forecasting import FallbackForecaster, LSTMForecaster  # noqa: PLC0415
+    """Import forecasting classes. LSTMForecaster requires torch; falls back gracefully."""
+    from src.models.forecasting import FallbackForecaster  # noqa: PLC0415
+    try:
+        from src.models.forecasting import LSTMForecaster  # noqa: PLC0415
+    except ImportError:
+        LSTMForecaster = FallbackForecaster  # type: ignore[misc,assignment]
     return FallbackForecaster, LSTMForecaster
 
 
@@ -357,7 +361,7 @@ class ObserverAgent:
                 model = self._train_lstm_for_series(series, str(link_id))
                 self._series_forecasters[key] = model
                 self._series_metadata[key] = ("link", str(link_id), "utilization_pct")
-                if isinstance(model, LSTMForecaster):
+                if LSTMForecaster is not FallbackForecaster and isinstance(model, LSTMForecaster):
                     lstm_models.append(model)
 
         node_df = baseline_df[baseline_df["entity_type"] == "node"]
@@ -377,6 +381,11 @@ class ObserverAgent:
         FallbackForecaster, LSTMForecaster = _load_forecasting()
         seq_length = 30
         horizon = 10
+
+        # When torch is unavailable, LSTMForecaster is aliased to FallbackForecaster.
+        if LSTMForecaster is FallbackForecaster:
+            return FallbackForecaster()
+
         if len(series) < seq_length + horizon:
             logger.warning(
                 "Insufficient samples for LSTM training on {} (need {}, got {}). Using fallback.",
@@ -465,7 +474,11 @@ class ObserverAgent:
 
             recent = np.array(values, dtype=float)
             try:
-                if isinstance(model, LSTMForecaster):
+                is_lstm = (
+                    LSTMForecaster is not FallbackForecaster
+                    and isinstance(model, LSTMForecaster)
+                )
+                if is_lstm:
                     if len(recent) < model.seq_length:
                         continue
                     # Collect MC dropout uncertainty score across all LSTM series.
