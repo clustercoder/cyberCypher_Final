@@ -8,7 +8,10 @@ import DebateViewer from './components/DebateViewer'
 import MagicCard from './components/magicui/MagicCard'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
-const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:8000/ws'
+const _derivedWsUrl = import.meta.env.VITE_API_URL
+  ? import.meta.env.VITE_API_URL.replace(/^http(s)?/, (_, s) => (s ? 'wss' : 'ws')) + '/ws'
+  : 'ws://localhost:8000/ws'
+const WS_URL = import.meta.env.VITE_WS_URL || _derivedWsUrl
 
 const MAX_HISTORY = 60
 const MAX_EVENTS = 200
