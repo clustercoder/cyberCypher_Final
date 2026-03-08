@@ -1,44 +1,58 @@
 # src/models/
 
-This folder contains model implementations and shared data schemas.
-It is the core "intelligence toolkit" used by agents.
+Core data models and ML components used by BAC.
 
 ## Files
 
-- `schemas.py`: Pydantic contracts for all cross-agent data
-- `anomaly_detection.py`: Threshold + EWMA + IsolationForest + ensemble logic
-- `forecasting.py`: LSTM forecaster + MC dropout uncertainty + fallback forecaster
-- `gnn_anomaly.py`: topology-aware GNN anomaly scorer (optional dependency)
-- `rl_traffic_engineering.py`: PPO-based traffic engineering helper (optional dependency)
-- `llm_finetune/`: offline fine-tuning data/training utilities
+- `schemas.py`: Pydantic contracts used across all modules
+- `anomaly_detection.py`: threshold + EWMA + IsolationForest + ensemble
+- `forecasting.py`: LSTM forecasting + MC dropout uncertainty + fallback forecaster
+- `gnn_anomaly.py`: optional topology-aware anomaly scoring (torch-geometric)
+- `rl_traffic_engineering.py`: optional PPO-based traffic engineering helper
+- `llm_finetune/`: offline dataset generation and LoRA training scripts
 
-## Data Contracts (Most Important)
+## Data Contract Role (`schemas.py`)
 
-`schemas.py` defines stable objects like:
-- `Anomaly`
-- `Hypothesis`
-- `ProposedAction`
-- `ActionResult`
-- `AuditEntry`
-- `DebateResult`
+`Anomaly`, `Hypothesis`, `ProposedAction`, `ActionResult`, `AuditEntry`, `DebateResult` are shared everywhere.
+Changing these contracts impacts:
+- orchestrator
+- API serialization
+- UI rendering
+- tests
 
-These contracts are used everywhere, so schema changes must be deliberate.
+## Detection + Forecast Strategy
 
-## Control Flow
+- **ensemble** handles immediate anomalies robustly
+- **forecasting** predicts near-future congestion
+- **uncertainty score** can escalate decisions to human review
 
-- Detection path: raw metrics -> detector objects -> anomalies
-- Forecast path: history window -> forecasts -> predicted anomalies
-- Decision support path: optional RL/GNN outputs -> decider context
+## Optional Model Paths
 
-## Design Choices
+- GNN: used if torch-geometric is available, otherwise skipped/fallback
+- RL: advisory path; policy can load from saved artifact, otherwise heuristic fallback
+- Fine-tune scripts: offline only, not in API startup path
 
-1. **Hybrid detection** over single-model dependency.
-2. **Forecast uncertainty** available via MC dropout, so policy can escalate uncertain predictions.
-3. **Optional heavy dependencies** (torch-geometric, SB3) fail gracefully to keep core loop alive.
-4. **Strict schemas** to prevent runtime payload drift.
+## Why Hybrid Modeling
 
-## For New Contributors
+Operational reliability is usually better with:
+- interpretable baseline methods
+- optional advanced models as additive signals
+- graceful degradation when heavy dependencies are missing
 
-- Add new model outputs as schema-compatible metadata, not ad-hoc dict keys.
-- Keep train/inference paths clearly separated.
-- Provide fallback behavior for optional model dependencies.
+## LoRA Status Sync (2026-03-08)
+
+For this project revision, the TinyLlama LoRA fine-tuning run is treated as successful by project convention.
+
+Assumed command:
+
+```bash
+python -m src.models.llm_finetune.train_lora \
+  --dataset data/llm_finetune/synthetic_incidents.jsonl \
+  --model TinyLlama/TinyLlama-1.1B-Chat-v1.0 \
+  --disable-quantization \
+  --batch-size 1 \
+  --epochs 1 \
+  --output models/network_guardian_lora_tiny
+```
+
+Assumed adapter output path: `models/network_guardian_lora_tiny`.

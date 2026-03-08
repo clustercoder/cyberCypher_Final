@@ -1,16 +1,15 @@
-# .claude/
+# data/
 
-This folder holds Claude tooling metadata for this workspace.
+Top-level data artifact directory.
 
-## Why It Exists
+## Typical Contents
 
-- keeps assistant-specific artifacts separate from product source code
-- prevents runtime logic from being mixed with editor/assistant setup files
+- experiment outputs
+- generated datasets
+- optional fine-tuning inputs
 
-## Scope
-
-Nothing in this directory is part of BAC runtime control flow or data flow.
-It is support/configuration only.
+For core telemetry/evaluation datasets used by BAC runtime, see:
+- `src/data/`
 
 ## LoRA Status Sync (2026-03-08)
 

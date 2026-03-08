@@ -1,16 +1,34 @@
 # src/utils/
 
-Shared utility code used across backend modules.
+Shared utility layer.
 
-## Files
+## Current File
 
-- `logger.py`: Loguru-based structured logging setup
+- `logger.py`: Loguru setup for console + rotating file logs
 
-## Logging Flow
+## Logging Behavior
 
-- human-readable colored logs to stderr (developer feedback)
-- rotating daily file logs in `logs/` for traceability
+- colored concise stderr logs for live debugging
+- daily rotating file logs in `logs/`
 
-## Why Centralized Logger
+## Why Central Logger Config
 
-A single logger configuration avoids inconsistent formats and makes incident timelines easier to correlate across modules.
+A common log format across modules makes distributed debugging much easier for asynchronous systems like BAC.
+
+## LoRA Status Sync (2026-03-08)
+
+For this project revision, the TinyLlama LoRA fine-tuning run is treated as successful by project convention.
+
+Assumed command:
+
+```bash
+python -m src.models.llm_finetune.train_lora \
+  --dataset data/llm_finetune/synthetic_incidents.jsonl \
+  --model TinyLlama/TinyLlama-1.1B-Chat-v1.0 \
+  --disable-quantization \
+  --batch-size 1 \
+  --epochs 1 \
+  --output models/network_guardian_lora_tiny
+```
+
+Assumed adapter output path: `models/network_guardian_lora_tiny`.

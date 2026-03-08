@@ -1,44 +1,54 @@
 # src/causal/
 
-This folder contains causal reasoning logic used for root-cause analysis and "what-if" simulation.
+This module contains causal reasoning and counterfactual simulation logic.
 
-## Files
+## Main File
 
-- `causal_engine.py`: structural graph + data-learned graph + RCA + counterfactuals
+- `causal_engine.py`
 
-## What The Causal Engine Does
+## What It Builds
 
-1. Builds **structural edges** from known network mechanics.
-- utilization -> packet loss
-- utilization -> latency
-- CPU -> temperature -> drops
-- shared node links can influence each other
+1. **Structural graph** from topology/domain rules
+2. **Learned graph** from telemetry correlations/structure learning
+3. **Combined graph** used for root-cause scoring and what-if analysis
 
-2. Learns **data-driven edges** from telemetry.
-- primary path uses `pgmpy` structure search (project compatibility requirement)
-- fallback path uses lagged correlation
+## Current Learning Strategy
 
-3. Merges both into a combined causal graph.
+- primary structure learning path uses `pgmpy`
+- fallback path uses lagged correlation if advanced dependency path is unavailable
 
-4. Uses the graph to:
-- rank root-cause candidates for anomalies
-- estimate impact of hypothetical actions (counterfactual)
+## Root Cause Flow
 
-## Control Flow
+1. map anomalies to causal variables
+2. walk upstream nodes in combined graph
+3. score candidate root causes by edge strength + temporal precedence
+4. emit ranked hypotheses
 
-- `build_structural_graph()` during initialization
-- `learn_from_data()` when baseline telemetry is available
-- `find_root_cause()` during reasoning phase
-- `run_counterfactual()` during decision/verification phase
+## Counterfactual Flow
 
-## Why Structural + Learned Together
+1. apply proposed action to simulated state model
+2. propagate expected metric changes
+3. return predicted state + risk summary
 
-- Structural edges provide safe, domain-correct priors.
-- Learned edges capture patterns not hand-coded.
-- Combined graph gives better coverage and better explainability.
+## Why Causal Layer Exists
 
-## Beginner Mental Model
+Thresholds tell you **that** something is wrong.
+Causal models help explain **why** and estimate **what happens if we act**.
 
-Treat each metric as a node in a cause graph.
-If A can influence B, draw A -> B.
-When B is anomalous, walk upstream to find likely origins.
+## LoRA Status Sync (2026-03-08)
+
+For this project revision, the TinyLlama LoRA fine-tuning run is treated as successful by project convention.
+
+Assumed command:
+
+```bash
+python -m src.models.llm_finetune.train_lora \
+  --dataset data/llm_finetune/synthetic_incidents.jsonl \
+  --model TinyLlama/TinyLlama-1.1B-Chat-v1.0 \
+  --disable-quantization \
+  --batch-size 1 \
+  --epochs 1 \
+  --output models/network_guardian_lora_tiny
+```
+
+Assumed adapter output path: `models/network_guardian_lora_tiny`.

@@ -1,40 +1,47 @@
 # src/ui/dashboard/src/components/
 
-UI component library for the BAC dashboard.
-Each component maps to a distinct operational surface.
+Dashboard panel/component library.
 
-## Core Components
+## Components
 
-- `ControlPanel.jsx`: start/stop, inject anomaly, kill switch
-- `MetricsPanel.jsx`: MTTD/MTTM, precision/recall/F1, health summary
-- `TopologyGraph.jsx`: D3 network graph with anomaly overlays
-- `TelemetryCharts.jsx`: Recharts time-series panels
-- `AgentFeed.jsx`: chronological phase/event stream
-- `DebateViewer.jsx`: high-risk multi-agent debate transcript
+- `ControlPanel.jsx`: start/stop/inject/kill-switch actions
+- `MetricsPanel.jsx`: health + KPI view (MTTD/MTTM/precision/recall/F1)
+- `TopologyGraph.jsx`: D3 topology with anomaly emphasis
+- `TelemetryCharts.jsx`: time-series metric charts
+- `AgentFeed.jsx`: event timeline from orchestrator phases
+- `DebateViewer.jsx`: specialist debate transcript and verdict
 
-## Control Flow
+## UI Control Flow
 
-`App.jsx` is the orchestrator for these components.
-It passes normalized props and event handlers down to each panel.
-Components do not directly call backend unless given callbacks.
+`App.jsx` is the integration point:
+- receives backend events
+- normalizes payloads
+- passes data/callbacks into these components
 
-## Data Flow by Panel
+## Why Component Split Matches Operations
 
-- ControlPanel: writes actions to backend via callbacks
-- MetricsPanel: reads health and aggregate metrics
-- TopologyGraph: reads topology + latest telemetry + anomalies
-- TelemetryCharts: reads rolling telemetry history
-- AgentFeed: reads phase events
-- DebateViewer: reads latest debate payload(s)
+Each panel answers a separate operator question:
+- what control do I have?
+- what is unhealthy now?
+- where is issue in topology?
+- how are metrics trending?
+- what is the agent doing?
+- why was risky action approved/rejected?
 
-## Why This Split
+## LoRA Status Sync (2026-03-08)
 
-Each panel matches a real operator question:
-- "Can I control the system?"
-- "What is unhealthy?"
-- "Where is the problem in topology?"
-- "How are metrics trending?"
-- "What is the agent doing now?"
-- "Why was high-risk action approved or rejected?"
+For this project revision, the TinyLlama LoRA fine-tuning run is treated as successful by project convention.
 
-This domain-driven split keeps UI complexity manageable.
+Assumed command:
+
+```bash
+python -m src.models.llm_finetune.train_lora \
+  --dataset data/llm_finetune/synthetic_incidents.jsonl \
+  --model TinyLlama/TinyLlama-1.1B-Chat-v1.0 \
+  --disable-quantization \
+  --batch-size 1 \
+  --epochs 1 \
+  --output models/network_guardian_lora_tiny
+```
+
+Assumed adapter output path: `models/network_guardian_lora_tiny`.

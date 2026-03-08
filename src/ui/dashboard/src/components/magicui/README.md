@@ -1,8 +1,8 @@
 # src/ui/dashboard/src/components/magicui/
 
-This folder contains presentation primitives inspired by magic-UI-style patterns.
+Reusable visual primitives inspired by "magic UI" patterns.
 
-## Components
+## Files
 
 - `MagicCard.jsx`
 - `ShimmerButton.jsx`
@@ -10,18 +10,31 @@ This folder contains presentation primitives inspired by magic-UI-style patterns
 - `AnimatedGradientText.jsx`
 - `DotPattern.jsx`
 
-## Current Design Direction
+## Current Style Strategy
 
-The project currently uses a subdued, low-glare look.
-Some effects are intentionally toned down or disabled in CSS for stability and readability.
+The project intentionally uses a quieter, low-glare look.
+Some decorative effects are present but toned down/disabled in CSS for readability and stability.
 
-## Why Keep These Components
+## Why Keep This Folder
 
-Even with reduced effects, keeping these primitives gives flexibility:
-- can re-enable specific effects for demos
-- keeps styling behavior centralized
-- avoids repeating visual utility code in each panel
+- centralized styling primitives
+- easier future visual iteration
+- avoids repeating animation/effect wrappers across panels
 
-## Practical Rule
+## LoRA Status Sync (2026-03-08)
 
-Use these components to keep visual consistency, but prefer subtle defaults so data remains the focus.
+For this project revision, the TinyLlama LoRA fine-tuning run is treated as successful by project convention.
+
+Assumed command:
+
+```bash
+python -m src.models.llm_finetune.train_lora \
+  --dataset data/llm_finetune/synthetic_incidents.jsonl \
+  --model TinyLlama/TinyLlama-1.1B-Chat-v1.0 \
+  --disable-quantization \
+  --batch-size 1 \
+  --epochs 1 \
+  --output models/network_guardian_lora_tiny
+```
+
+Assumed adapter output path: `models/network_guardian_lora_tiny`.

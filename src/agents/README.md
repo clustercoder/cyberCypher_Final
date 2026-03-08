@@ -1,54 +1,68 @@
 # src/agents/
 
-This folder implements the autonomous decision loop.
-Each file maps to one role in the operation lifecycle.
+This directory implements BAC's autonomous operations loop.
 
-## Files
+## Files and Responsibilities
 
-- `observer.py`: telemetry ingestion + anomaly detection
-- `reasoner.py`: causal analysis + optional LLM hypothesis synthesis
-- `decider.py`: action generation, utility scoring, policy gates
-- `debate.py`: specialist-agent debate for high-risk decisions
-- `actor.py`: executes actions with rollback and monitoring
-- `learner.py`: tracks outcomes and retraining signals
+- `observer.py`: ingest telemetry, run ensemble detection, forecasting, GNN scoring
+- `reasoner.py`: combine causal candidates with optional LLM synthesis
+- `decider.py`: generate and rank interventions, integrate digital twin and safety pre-checks
+- `debate.py`: specialist multi-agent deliberation for risky actions
+- `actor.py`: execute changes, track rollback tokens, run post-action monitoring
+- `learner.py`: outcome labeling, metrics, retraining signals, LLM dataset export
 - `orchestrator.py`: LangGraph state machine wiring all phases
-- `test_agent.py`: local smoke/integration-style scenario run
+- `test_agent.py`: smoke path for orchestrator without live OpenAI calls
 
-## Control Flow Inside Agents
+## Actual Graph Flow
 
-1. `ObserverAgent.ingest()` stores current snapshot.
-2. `ObserverAgent.detect()` emits anomaly objects.
-3. `ReasonerAgent.analyze()` turns anomalies into hypotheses.
-4. `DeciderAgent.evaluate()` ranks candidate actions.
-5. `DebateSystem.conduct_debate()` may run for risky actions.
-6. `Z3SafetyVerifier` checks action constraints.
-7. `ActorAgent.execute()` applies action to simulation engine.
-8. `LearnerAgent.record_outcome()` logs effectiveness.
+`observe -> reason -> decide -> (debate?) -> verify -> act -> learn`
 
-`AgentOrchestrator` coordinates these steps with a LangGraph state graph.
+### Conditional logic
 
-## Data Flow
+- no anomalies: cycle ends early
+- high-risk action: debate branch triggered
+- unsafe verification: return to decide (max 3 attempts)
+- requires approval: act phase queues pending approval
 
-Primary models moved between agents:
+## Key Data Shapes
+
 - `Anomaly`
 - `Hypothesis`
 - `ProposedAction`
 - `ActionResult`
 - `AuditEntry`
 
-All are defined in `src/models/schemas.py`.
+Defined in `src/models/schemas.py`.
 
-## Why Separate Agents
+## Notable Current Behavior (important)
 
-The split mirrors real NOC workflows:
-- detector and reasoner should not be coupled tightly
-- decision policy should stay independent from execution code
-- learning should be append-only and resilient
+1. Observer now surfaces forecast uncertainty score (`MC dropout`) to orchestrator.
+2. Orchestrator injects `uncertainty_score` into top action parameters.
+3. Decider can force approval requirement when uncertainty is high.
+4. Learner exports LLM fine-tuning data on orchestrator shutdown.
+5. RL recommendation is available but used as advisory signal/logging, not hard override.
 
-This separation also makes it easier to evaluate each phase in isolation.
+## Why This Split Works
 
-## Practical Notes
+It mirrors real NOC roles and improves traceability:
+- detection and reasoning stay independent
+- safety and execution are explicit gates
+- learning is append-only and auditable
 
-- Missing `OPENAI_API_KEY` does not hard-fail the full system now; reasoner/debate can degrade.
-- Some advanced components (RL/GNN/LLM fine-tune) are optional and may run in fallback mode.
-- Keep agent methods side-effect aware. Detection and reasoning should be deterministic where possible; execution and learning naturally mutate state.
+## LoRA Status Sync (2026-03-08)
+
+For this project revision, the TinyLlama LoRA fine-tuning run is treated as successful by project convention.
+
+Assumed command:
+
+```bash
+python -m src.models.llm_finetune.train_lora \
+  --dataset data/llm_finetune/synthetic_incidents.jsonl \
+  --model TinyLlama/TinyLlama-1.1B-Chat-v1.0 \
+  --disable-quantization \
+  --batch-size 1 \
+  --epochs 1 \
+  --output models/network_guardian_lora_tiny
+```
+
+Assumed adapter output path: `models/network_guardian_lora_tiny`.

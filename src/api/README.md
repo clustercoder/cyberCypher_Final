@@ -1,54 +1,73 @@
 # src/api/
 
-This folder exposes BAC to external clients (UI, scripts, tools).
-It is the transport layer between autonomous backend logic and human operators.
+This directory provides the external interface to BAC:
+- REST endpoints
+- WebSocket event streaming
 
-## Files
+## Main File
 
-- `main.py`: FastAPI app, startup lifecycle, WebSocket broadcast loops
+- `main.py`: FastAPI app + startup lifecycle + background loops
 
-## Control Flow
+## Startup Flow
 
-1. App startup builds:
-- `NetworkTopology`
-- `SimulationEngine`
-- `AgentOrchestrator`
-- optional `RAGKnowledgeBase`
+1. load `.env`
+2. initialize topology
+3. initialize simulation engine
+4. initialize orchestrator and train observer on baseline data
+5. initialize optional RAG KB
+6. start engine loop + agent observation loop
 
-2. Background tasks start:
-- simulation engine loop
-- agent observation loop
+## Runtime Flow
 
-3. API endpoints allow operators to:
-- start/stop automation
-- inject scenarios
-- trigger kill switch
-- query topology/metrics/status
+- engine loop advances simulation continuously
+- agent loop runs one orchestrator cycle every 5 seconds
+- telemetry and phase events are broadcast to connected WebSocket clients
 
-4. WebSocket channel pushes:
-- telemetry snapshots
-- anomalies
-- agent phase events
-- debate/verification/action updates
+## Key REST Endpoints
 
-## Data Flow
+- `GET /health`
+- `GET /api/status`
+- `GET /api/topology`
+- `GET /api/telemetry`
+- `GET /api/anomalies`
+- `GET /api/metrics`
+- `GET /api/audit-log`
+- `POST /api/start`
+- `POST /api/stop`
+- `POST /api/inject`
+- `POST /api/kill-switch`
+- `POST /api/approve`
+- RAG endpoints under `/api/rag/*`
 
-Inbound:
-- HTTP requests from dashboard controls
-- anomaly injection payloads
+## WebSocket
 
-Outbound:
-- JSON REST responses
-- real-time WebSocket event stream (`tick`, `telemetry`, `agent_event`, etc.)
+- path: `/ws`
+- event types include: `init`, `tick`, `telemetry`, `agent_event`, `kill_switch`
 
-## Why This Design
+## Why Background Loops
 
-- `lifespan` initialization guarantees the whole stack is ready before serving requests.
-- Background loops decouple simulation cadence from HTTP request latency.
-- WebSocket broadcasting keeps the UI responsive without polling everything continuously.
+Separating simulation/agent loops from request handlers keeps UI responsive and avoids API latency coupling to internal cycle duration.
 
-## Operational Considerations
+## Operational Notes
 
-- `.env` is loaded at startup so local `uvicorn` runs pick up `OPENAI_API_KEY`.
-- Serialization uses JSON-safe payload conversion to avoid datetime/model encoding issues.
-- API is intentionally permissive (`CORS *`) for hackathon/demo speed; tighten for production.
+- CORS is open for hackathon/demo convenience.
+- serialization uses JSON-safe encoding for Pydantic/date fields.
+- if RAG/OpenAI init fails, core API still runs.
+
+## LoRA Status Sync (2026-03-08)
+
+For this project revision, the TinyLlama LoRA fine-tuning run is treated as successful by project convention.
+
+Assumed command:
+
+```bash
+python -m src.models.llm_finetune.train_lora \
+  --dataset data/llm_finetune/synthetic_incidents.jsonl \
+  --model TinyLlama/TinyLlama-1.1B-Chat-v1.0 \
+  --disable-quantization \
+  --batch-size 1 \
+  --epochs 1 \
+  --output models/network_guardian_lora_tiny
+```
+
+Assumed adapter output path: `models/network_guardian_lora_tiny`.

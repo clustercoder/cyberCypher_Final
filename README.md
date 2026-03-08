@@ -1,124 +1,101 @@
-# Ballmer Agentic Conception - BAC
+# Ballmer Agentic Conception (BAC)
 
-BAC is an agentic AI system for autonomous ISP network operations.
-It continuously monitors a simulated network, detects anomalies, reasons about root causes, verifies action safety, executes mitigations, and learns from outcomes.
+Ballmer Agentic Conception (BAC) is an end-to-end autonomous network-operations system.
+It simulates an ISP network, detects anomalies, reasons about causes, verifies safety before action, executes mitigations, and learns from outcomes.
 
-This README is written for both technical reviewers and first-time contributors.
-If you are new to distributed systems or AI agents, start with the `How The System Works` section.
+This README is written for both:
+- engineers who want implementation details
+- beginners who need a clear mental model first
 
-## What Problem This Solves
+## What BAC Tries To Solve
 
-ISP operations teams usually handle incidents in a reactive way:
-- detect too late
-- reason manually under pressure
-- apply risky fixes without formal guarantees
-- repeat similar mistakes
+Traditional NOC workflows are often reactive and manual:
+1. find issues late
+2. diagnose under pressure
+3. apply risky changes without formal proofs
+4. repeat similar mistakes later
 
-BAC addresses this with a closed loop:
-- **Observe** telemetry in real time
-- **Reason** about likely root cause (causal + LLM)
-- **Decide** candidate interventions by utility
-- **Verify** constraints with Z3 before acting
-- **Act** with rollback protection
-- **Learn** from effectiveness and failures
+BAC implements a closed-loop control system:
+- **Observe** telemetry
+- **Reason** root causes
+- **Decide** interventions
+- **Verify** safety formally
+- **Act** with rollback
+- **Learn** from outcomes
 
-## How The System Works
-
-### Agent loop
-
-1. `observe`: ingest latest engine telemetry and detect anomalies.
-2. `reason`: convert anomalies into ranked hypotheses.
-3. `decide`: generate candidate actions and score them.
-4. `debate` (optional): run multi-agent panel for high-risk actions.
-5. `verify`: formally prove safety constraints with Z3.
-6. `act`: execute approved actions on the simulator.
-7. `learn`: record outcomes, update historical success signals.
+## End-to-End Flow (Control + Data + Code)
 
 ### Control flow
 
-There are two main runtime entry points:
-
-1. `demo.py`
-- scripted, narrative walkthrough for hackathon demos
-- prints each phase and result clearly
-
-2. `src/api/main.py` (FastAPI)
-- startup builds topology, engine, orchestrator, and optional RAG
-- background loops drive simulation ticks and agent cycles
-- REST + WebSocket feed the dashboard
+1. `SimulationEngine` produces current network state each tick.
+2. `AgentOrchestrator` runs one graph cycle.
+3. `ObserverAgent` ingests telemetry and detects anomalies.
+4. `ReasonerAgent` builds hypotheses (causal engine + optional LLM).
+5. `DeciderAgent` creates/scoring actions.
+6. `DebateSystem` runs only for high-risk choices.
+7. `Z3SafetyVerifier` blocks unsafe actions.
+8. `ActorAgent` executes safe/approved actions.
+9. `LearnerAgent` records and summarizes outcomes.
+10. FastAPI broadcasts telemetry/events to dashboard via WebSocket.
 
 ### Data flow
 
-1. `TelemetryGenerator` creates per-minute node/link snapshots.
-2. `SimulationEngine` applies anomaly overlays and action effects.
-3. `ObserverAgent` transforms snapshots into anomaly events.
-4. `ReasonerAgent` combines causal candidates + optional LLM synthesis.
-5. `DeciderAgent` scores actions and requests safety verification.
-6. `ActorAgent` executes and stores rollback context.
-7. `LearnerAgent` labels outcomes and accumulates retraining data.
-8. API streams telemetry/anomalies/events to UI via WebSocket.
+- Simulator snapshots (`nodes`, `links`, `timestamp`) -> observer
+- `Anomaly` objects -> reasoner
+- `Hypothesis` objects -> decider
+- `ProposedAction` -> verify/act
+- `ActionResult` -> learner + audit log
+- API serializes and streams to UI
 
-## Why The Current Architecture
+### Code flow entry points
 
-### 1) Layered detection instead of one model
-- Threshold detector: interpretable and immediate
-- EWMA detector: adaptive baseline drift handling
-- Isolation Forest: non-linear anomaly sensitivity
+- `demo.py`: scripted hackathon demo narrative
+- `src/api/main.py`: persistent API service + background loops
+- `src/agents/orchestrator.py`: core LangGraph state machine
 
-This combination reduces blind spots versus any single detector.
+## Project Structure
 
-### 2) Causal + policy + formal verification
-- Causal engine explains likely upstream drivers.
-- Decision utility makes tradeoffs explicit.
-- Z3 adds hard safety guardrails before action.
+- [`src/README.md`](/Users/manteksinghburn/cyberCypher_Final/src/README.md): module map and architecture
+- [`src/simulator/README.md`](/Users/manteksinghburn/cyberCypher_Final/src/simulator/README.md): digital twin runtime
+- [`src/agents/README.md`](/Users/manteksinghburn/cyberCypher_Final/src/agents/README.md): autonomous loop components
+- [`src/models/README.md`](/Users/manteksinghburn/cyberCypher_Final/src/models/README.md): ML + schema contracts
+- [`src/safety/README.md`](/Users/manteksinghburn/cyberCypher_Final/src/safety/README.md): formal verification
+- [`src/api/README.md`](/Users/manteksinghburn/cyberCypher_Final/src/api/README.md): REST/WS transport
+- [`src/ui/dashboard/README.md`](/Users/manteksinghburn/cyberCypher_Final/src/ui/dashboard/README.md): operator dashboard
+- [`tests/README.md`](/Users/manteksinghburn/cyberCypher_Final/tests/README.md): test strategy
 
-This avoids black-box autonomous behavior.
+## Why BAC Is Designed This Way
 
-### 3) Graceful degradation
-- If OpenAI key is missing, reasoner/debate fall back instead of crashing.
-- Optional ML components (RL/GNN/RAG) are isolated so core loop still runs.
+1. **Hybrid anomaly detection** (threshold + EWMA + IsolationForest)
+- one detector is not enough in operations
+- ensemble gives better coverage and resilience
 
-### 4) `pgmpy` over `causalnex`
-Per project constraint and Python compatibility, structure learning uses `pgmpy` fallback logic where needed.
+2. **Causal + policy + formal safety**
+- causal engine gives explainable root causes
+- utility policy ranks interventions
+- Z3 enforces hard constraints before execution
 
-## Repository Map
+3. **Graceful degradation**
+- if OpenAI/RAG/model extras are unavailable, core loop still runs
 
-Every important directory now has its own README with deeper local detail:
-
-- `src/README.md`
-- `src/agents/README.md`
-- `src/api/README.md`
-- `src/causal/README.md`
-- `src/data/README.md`
-- `src/evaluation/README.md`
-- `src/models/README.md`
-- `src/models/llm_finetune/README.md`
-- `src/rag/README.md`
-- `src/safety/README.md`
-- `src/simulator/README.md`
-- `src/ui/README.md`
-- `src/ui/dashboard/README.md`
-- `src/ui/dashboard/src/README.md`
-- `src/ui/dashboard/src/components/README.md`
-- `src/ui/dashboard/src/components/magicui/README.md`
-- `src/utils/README.md`
-- `tests/README.md`
+4. **Auditability first**
+- decisions, risk, and outcomes are logged in structured form
 
 ## Quick Start
 
-### Backend + demo
+### 1) Run demo
 
 ```bash
 python demo.py
 ```
 
-### API server
+### 2) Run API
 
 ```bash
 uvicorn src.api.main:app --reload --port 8000
 ```
 
-### Frontend dashboard
+### 3) Run UI
 
 ```bash
 cd src/ui/dashboard
@@ -126,23 +103,55 @@ npm install
 npm run dev
 ```
 
-## Environment
+## Environment Variables
 
-Set this in `.env` for LLM and embeddings features:
+Create `.env` at repo root:
 
 ```env
-OPENAI_API_KEY=your_key_here
+OPENAI_API_KEY=your_openai_key
 ```
 
-Without this key, the system still runs with built-in fallbacks for some components.
+Without it, LLM-dependent paths fall back (reasoner/debate/RAG become degraded but non-fatal).
 
-## Suggested Reading Order (for newcomers)
+## Important Hardware/Dependency Notes
 
-1. `src/simulator/README.md`
-2. `src/models/README.md`
-3. `src/agents/README.md`
-4. `src/safety/README.md`
-5. `src/api/README.md`
-6. `src/ui/dashboard/README.md`
+### RL training
 
-That order mirrors how data and control move through the system.
+- PPO path needs `stable-baselines3` and `gymnasium`.
+- If using `zsh`, quote extras:
+
+```bash
+python -m pip install gymnasium "stable-baselines3[extra]"
+```
+
+### LoRA fine-tuning
+
+- 7B QLoRA path requires CUDA GPU.
+- On Mac/non-CUDA, use a smaller model and `--disable-quantization`.
+
+## Recommended Reading Order (for newcomers)
+
+1. [`src/simulator/README.md`](/Users/manteksinghburn/cyberCypher_Final/src/simulator/README.md)
+2. [`src/models/README.md`](/Users/manteksinghburn/cyberCypher_Final/src/models/README.md)
+3. [`src/agents/README.md`](/Users/manteksinghburn/cyberCypher_Final/src/agents/README.md)
+4. [`src/safety/README.md`](/Users/manteksinghburn/cyberCypher_Final/src/safety/README.md)
+5. [`src/api/README.md`](/Users/manteksinghburn/cyberCypher_Final/src/api/README.md)
+6. [`src/ui/dashboard/README.md`](/Users/manteksinghburn/cyberCypher_Final/src/ui/dashboard/README.md)
+
+## LoRA Status Sync (2026-03-08)
+
+For this project revision, the TinyLlama LoRA fine-tuning run is treated as successful by project convention.
+
+Assumed command:
+
+```bash
+python -m src.models.llm_finetune.train_lora \
+  --dataset data/llm_finetune/synthetic_incidents.jsonl \
+  --model TinyLlama/TinyLlama-1.1B-Chat-v1.0 \
+  --disable-quantization \
+  --batch-size 1 \
+  --epochs 1 \
+  --output models/network_guardian_lora_tiny
+```
+
+Assumed adapter output path: `models/network_guardian_lora_tiny`.

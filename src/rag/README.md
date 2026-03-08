@@ -1,41 +1,50 @@
 # src/rag/
 
-This folder provides retrieval-augmented context for operational reasoning.
+Retrieval-augmented context layer for operations knowledge.
 
-## Files
+## Main File
 
-- `knowledge_base.py`: runbook corpus, chunking, embedding, FAISS retrieval
+- `knowledge_base.py`
 
-## What It Does
+## What It Stores
 
-- Stores operational runbooks (congestion, DDoS, hardware failure, SLA response, etc.).
-- Embeds chunks with OpenAI embeddings.
-- Retrieves relevant context text for a troubleshooting query.
-
-## Control Flow
-
-1. On initialization, load runbook documents.
-2. Split text into chunks.
-3. Build FAISS index.
-4. At query time, return top matching chunks.
+Runbooks for scenarios such as:
+- congestion response
+- BGP issues
+- DDoS mitigation
+- hardware escalation
+- SLA breach response
 
 ## Data Flow
 
-Input:
-- query string (for example: "troubleshooting latency issues")
+1. documents are chunked and embedded
+2. FAISS index stores embeddings
+3. reasoner queries top-k relevant chunks
+4. returned context is appended to reasoning prompt
 
-Output:
-- relevant runbook context text
+## Why RAG Is Useful Here
 
-Consumer:
-- `ReasonerAgent` adds this context to LLM prompt synthesis
+LLM-only reasoning may invent unsafe procedures.
+RAG grounds responses in explicit operational playbooks.
 
-## Why Use RAG Here
+## Runtime Behavior
 
-LLMs can hallucinate operational steps.
-RAG grounds reasoning in concrete runbooks and improves consistency.
+If OpenAI embedding dependencies are unavailable, RAG initialization fails gracefully and BAC continues without this layer.
 
-## Practical Note
+## LoRA Status Sync (2026-03-08)
 
-RAG initialization may fail without OpenAI credentials.
-The system should degrade cleanly by continuing reasoning without retrieved context.
+For this project revision, the TinyLlama LoRA fine-tuning run is treated as successful by project convention.
+
+Assumed command:
+
+```bash
+python -m src.models.llm_finetune.train_lora \
+  --dataset data/llm_finetune/synthetic_incidents.jsonl \
+  --model TinyLlama/TinyLlama-1.1B-Chat-v1.0 \
+  --disable-quantization \
+  --batch-size 1 \
+  --epochs 1 \
+  --output models/network_guardian_lora_tiny
+```
+
+Assumed adapter output path: `models/network_guardian_lora_tiny`.

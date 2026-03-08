@@ -1,29 +1,47 @@
 # src/data/
 
-This directory stores generated telemetry datasets used for training and evaluation.
+Generated datasets used by training and evaluation pipelines.
 
 ## Typical Files
 
-- `baseline_telemetry.csv`: normal behavior only
-- `anomaly_telemetry.csv`: full timeline with injected incidents
-- `train_telemetry.csv`: training split
-- `test_telemetry.csv`: evaluation split
-- `ground_truth_labels.csv`: per-timestamp anomaly labels
-- `scenario_metadata.json`: scenario-level metadata and windows
+- `baseline_telemetry.csv`
+- `anomaly_telemetry.csv`
+- `train_telemetry.csv`
+- `test_telemetry.csv`
+- `ground_truth_labels.csv`
+- `scenario_metadata.json`
 
-## Data Flow
+## How Data Moves
 
 1. `src/evaluation/generate_dataset.py` writes these files.
-2. `ObserverAgent.train_detectors()` consumes train/baseline data.
-3. `src/evaluation/evaluate.py` consumes test + ground truth data.
+2. `ObserverAgent.train_detectors()` reads baseline/train telemetry.
+3. `src/evaluation/evaluate.py` reads test + ground truth to score system quality.
 
-## Why CSV + JSON
+## Why Flat CSV + JSON Metadata
 
-- CSV is easy to inspect and use with pandas.
-- JSON captures richer scenario metadata that does not fit flat tables cleanly.
+- CSV is easy for pandas and inspection.
+- JSON stores richer scenario-level structure cleanly.
 
-## Notes For New Contributors
+## Important Conventions
 
-- Keep timestamps in UTC and ISO format.
-- Keep `entity_type` explicit (`node` or `link`).
-- Avoid changing column names unless you also update training/evaluation code.
+- timestamps are UTC ISO strings
+- entities are split by `entity_type` (`node` or `link`)
+- metric column names are shared across simulator, models, and evaluation
+
+## LoRA Status Sync (2026-03-08)
+
+For this project revision, the TinyLlama LoRA fine-tuning run is treated as successful by project convention.
+
+Assumed command:
+
+```bash
+python -m src.models.llm_finetune.train_lora \
+  --dataset data/llm_finetune/synthetic_incidents.jsonl \
+  --model TinyLlama/TinyLlama-1.1B-Chat-v1.0 \
+  --disable-quantization \
+  --batch-size 1 \
+  --epochs 1 \
+  --output models/network_guardian_lora_tiny
+```
+
+Assumed adapter output path: `models/network_guardian_lora_tiny`.

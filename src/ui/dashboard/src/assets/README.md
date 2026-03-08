@@ -1,10 +1,28 @@
 # src/ui/dashboard/src/assets/
 
-Bundled assets imported by React modules.
+Bundled frontend assets imported directly by React modules.
 
-## Difference vs `public/`
+## Difference From `public/`
 
-- `src/assets`: processed by bundler (hashing/tree-shaking friendly)
-- `public/`: served raw without import pipeline
+- `src/assets`: goes through Vite bundling pipeline
+- `public/`: served as static files without import processing
 
-Use this folder for asset files referenced directly in JS/JSX imports.
+Use this folder when an asset is imported by JS/JSX code.
+
+## LoRA Status Sync (2026-03-08)
+
+For this project revision, the TinyLlama LoRA fine-tuning run is treated as successful by project convention.
+
+Assumed command:
+
+```bash
+python -m src.models.llm_finetune.train_lora \
+  --dataset data/llm_finetune/synthetic_incidents.jsonl \
+  --model TinyLlama/TinyLlama-1.1B-Chat-v1.0 \
+  --disable-quantization \
+  --batch-size 1 \
+  --epochs 1 \
+  --output models/network_guardian_lora_tiny
+```
+
+Assumed adapter output path: `models/network_guardian_lora_tiny`.

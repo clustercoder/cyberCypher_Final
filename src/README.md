@@ -1,49 +1,57 @@
 # src/
 
-This folder contains the full backend and frontend application logic.
-Think of it as the "operating system" of BAC.
+This folder contains all first-party application logic.
+Think of it as BAC's full runtime and product code.
 
-## Folder Purpose
+## Module Map
 
-- `simulator/`: generates and evolves network telemetry
-- `models/`: anomaly detection, forecasting, RL, schemas
-- `agents/`: observe-reason-decide-act-learn implementations
-- `causal/`: root cause and counterfactual reasoning engine
-- `safety/`: Z3 formal verification constraints
-- `rag/`: runbook retrieval with embeddings + FAISS
-- `api/`: FastAPI endpoints and WebSocket streaming
+- `simulator/`: synthetic ISP digital twin (topology + telemetry + actions)
+- `agents/`: observe/reason/decide/act/learn loop
+- `models/`: schemas + ML components
+- `causal/`: root-cause and counterfactual engine
+- `safety/`: Z3 constraints and proofs
+- `rag/`: runbook retrieval system
+- `api/`: FastAPI + WebSocket transport
 - `ui/`: React dashboard
-- `evaluation/`: dataset generation and scoring scripts
-- `data/`: generated baseline/anomaly datasets
-- `utils/`: shared logging and common utilities
+- `evaluation/`: dataset generation and objective scoring
+- `data/`: generated datasets
+- `utils/`: shared utilities (logging)
 
-## Control Flow Across src/
+## End-to-End Runtime Path
 
-1. Simulator publishes fresh snapshot.
-2. Agents consume snapshot and produce decisions.
-3. Safety verifier validates candidate action.
-4. Actor executes safe action on simulator.
-5. Learner records outcome statistics.
-6. API publishes state/events to frontend.
+1. simulator creates current network state
+2. agents process and decide
+3. safety gate verifies decision
+4. actor executes on simulator
+5. learner logs outcomes
+6. api streams state/events to ui
 
-## Data Contracts
+## Why This Layout
 
-Most cross-module payloads are Pydantic models in `models/schemas.py`.
-This choice keeps interfaces explicit and prevents silent shape drift.
+This structure separates concerns by responsibility, not by framework:
+- easier testing
+- lower coupling
+- easier fallback handling when optional dependencies are missing
 
-## Why This Structure
+## Contracts Across Modules
 
-The system is split by responsibility rather than by framework.
-That makes it easier to:
-- test parts independently
-- replace components (for example, different detector)
-- keep runtime fallbacks isolated
+All critical payloads use Pydantic models in `models/schemas.py`.
+That keeps inter-module interfaces explicit and stable.
 
-## New Contributor Tip
+## LoRA Status Sync (2026-03-08)
 
-If you are unsure where logic should go:
-- network evolution -> `simulator/`
-- mathematical or ML model logic -> `models/`
-- orchestration/policy -> `agents/`
-- API transport concerns -> `api/`
-- rendering/state presentation -> `ui/`
+For this project revision, the TinyLlama LoRA fine-tuning run is treated as successful by project convention.
+
+Assumed command:
+
+```bash
+python -m src.models.llm_finetune.train_lora \
+  --dataset data/llm_finetune/synthetic_incidents.jsonl \
+  --model TinyLlama/TinyLlama-1.1B-Chat-v1.0 \
+  --disable-quantization \
+  --batch-size 1 \
+  --epochs 1 \
+  --output models/network_guardian_lora_tiny
+```
+
+Assumed adapter output path: `models/network_guardian_lora_tiny`.

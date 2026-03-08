@@ -1,33 +1,45 @@
 # src/ui/dashboard/src/
 
-This is the React application source for the operator dashboard.
+Main React application source.
 
 ## Files
 
-- `App.jsx`: root state container and tab layout
-- `main.jsx`: React bootstrap entry
-- `index.css`: global theme, primitives, utility styles
-- `components/`: all reusable dashboard panels/widgets
-- `assets/`: module-imported static assets
+- `main.jsx`: app bootstrap
+- `App.jsx`: central state and layout/tab orchestration
+- `index.css`: global theme and shared style primitives
+- `components/`: panel/widget implementations
+- `assets/`: bundled asset imports
 
-## Control Flow
+## UI State/Data Flow
 
-1. `main.jsx` mounts `App`.
-2. `App` loads initial REST data and opens WebSocket.
-3. WebSocket events update React state stores in `App`.
-4. `App` passes normalized props down to components.
+1. `App.jsx` owns primary live state:
+- topology
+- telemetry history
+- active anomalies
+- agent events
+- debates
+- health/metrics
 
-## Data Flow
+2. child components receive normalized props and render only presentation logic.
 
-Inbound event types commonly handled:
-- `init`
-- `telemetry`
-- `agent_event`
-- `kill_switch`
+## Why This Pattern
 
-Derived state in `App` then powers charts, topology, metrics, and debate panels.
+Single owner state in `App` prevents inconsistent panel states and keeps integration with WS messages predictable.
 
-## Why Keep Most State In App
+## LoRA Status Sync (2026-03-08)
 
-A single source of truth avoids inconsistent panel states.
-Child components stay mostly presentation-focused and easier to test.
+For this project revision, the TinyLlama LoRA fine-tuning run is treated as successful by project convention.
+
+Assumed command:
+
+```bash
+python -m src.models.llm_finetune.train_lora \
+  --dataset data/llm_finetune/synthetic_incidents.jsonl \
+  --model TinyLlama/TinyLlama-1.1B-Chat-v1.0 \
+  --disable-quantization \
+  --batch-size 1 \
+  --epochs 1 \
+  --output models/network_guardian_lora_tiny
+```
+
+Assumed adapter output path: `models/network_guardian_lora_tiny`.

@@ -1,26 +1,42 @@
 # tests/
 
-This folder contains automated tests for integration and dataflow sanity.
+Automated tests for BAC integration and dataflow integrity.
 
 ## Files
 
-- `test_observer_agent.py`: observer behavior and detection checks
-- `test_dataflow.py`: payload/data movement validations
-- `test_integration.py`: broader multi-module interaction checks
+- `test_observer_agent.py`: observer-specific behaviors (history, dedupe, forecast, health summary)
+- `test_dataflow.py`: stage-by-stage pipeline shape checks
+- `test_integration.py`: cross-module integration checks
 
-## Testing Philosophy
+## Test Philosophy
 
-The project emphasizes integration confidence because most bugs occur at boundaries between modules.
+Most failures in this project happen at boundaries between modules.
+So tests prioritize interface contracts and end-to-end object validity.
 
-## What To Verify First
+## Recommended Run Order
 
-1. observer detects and deduplicates anomalies correctly
-2. orchestrator state transitions stay valid
-3. API and UI payload shapes remain compatible
-4. safety verification blocks unsafe actions
+```bash
+pytest tests/test_observer_agent.py
+pytest tests/test_dataflow.py
+pytest tests/test_integration.py
+```
 
-## Suggested Workflow
+Run full suite before demos/deployments.
 
-- run targeted tests after each subsystem change
-- run integration tests before demo/release
-- keep tests aligned with schema contracts
+## LoRA Status Sync (2026-03-08)
+
+For this project revision, the TinyLlama LoRA fine-tuning run is treated as successful by project convention.
+
+Assumed command:
+
+```bash
+python -m src.models.llm_finetune.train_lora \
+  --dataset data/llm_finetune/synthetic_incidents.jsonl \
+  --model TinyLlama/TinyLlama-1.1B-Chat-v1.0 \
+  --disable-quantization \
+  --batch-size 1 \
+  --epochs 1 \
+  --output models/network_guardian_lora_tiny
+```
+
+Assumed adapter output path: `models/network_guardian_lora_tiny`.

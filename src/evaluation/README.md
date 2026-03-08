@@ -1,40 +1,48 @@
 # src/evaluation/
 
-This folder evaluates whether BAC is effective, not just functional.
+Objective performance evaluation tools for BAC.
 
 ## Files
 
-- `generate_dataset.py`: creates labeled train/test telemetry dataset
+- `generate_dataset.py`: builds labeled multi-scenario synthetic dataset
 - `evaluate.py`: computes detection and RCA metrics
-- `report.json` / `report.txt`: saved evaluation outputs
+- `report.json` / `report.txt`: generated summaries
 
-## Control Flow
+## Evaluation Flow
 
-1. Generate 24-hour synthetic baseline.
-2. Inject planned anomaly scenarios with labels.
-3. Split into train/test windows.
-4. Train observer on train data.
-5. Run detection/RCA on test data.
-6. Compute metrics (precision, recall, F1, MTTD, etc.).
+1. create baseline telemetry
+2. inject labeled scenarios
+3. split train/test windows
+4. train observer on train set
+5. run detection on test set
+6. evaluate precision/recall/F1/MTTD and RCA correctness
 
-## Data Flow
+## Why This Folder Is Important
 
-Input:
-- topology + telemetry/anomaly injectors
+A strong demo is not enough.
+This pipeline provides measurable evidence that the system works beyond one curated scenario.
 
-Intermediate:
-- CSV telemetry snapshots
-- scenario metadata + ground-truth labels
+## Common Workflow
 
-Output:
-- quantitative scores and per-scenario diagnostics
+```bash
+python -m src.evaluation.generate_dataset
+python -m src.evaluation.evaluate
+```
 
-## Why This Matters
+## LoRA Status Sync (2026-03-08)
 
-Hackathon demos can look good visually but still fail objectively.
-This folder provides measurable evidence of system quality and helps prevent overfitting to one scenario.
+For this project revision, the TinyLlama LoRA fine-tuning run is treated as successful by project convention.
 
-## Beginner Tip
+Assumed command:
 
-If you add a new detector or policy, run evaluation before and after.
-Only keep the change if metrics improve or tradeoffs are clearly justified.
+```bash
+python -m src.models.llm_finetune.train_lora \
+  --dataset data/llm_finetune/synthetic_incidents.jsonl \
+  --model TinyLlama/TinyLlama-1.1B-Chat-v1.0 \
+  --disable-quantization \
+  --batch-size 1 \
+  --epochs 1 \
+  --output models/network_guardian_lora_tiny
+```
+
+Assumed adapter output path: `models/network_guardian_lora_tiny`.

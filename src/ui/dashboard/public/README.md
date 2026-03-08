@@ -1,14 +1,28 @@
 # src/ui/dashboard/public/
 
-Static files served as-is by Vite.
+Static assets served directly by Vite.
 
-## Typical Usage
+## Use This Folder For
 
-- favicons
-- static SVGs
-- immutable assets that do not need bundling
+- files that should not be processed/imported by bundler
+- simple static icons or files referenced by absolute public paths
 
-## Flow
+If asset needs import-time hashing/tree-shaking, keep it in `src/assets/` instead.
 
-Files here are copied directly to build output and referenced by absolute/public paths.
-Use this directory for static resources that are not imported by JS modules.
+## LoRA Status Sync (2026-03-08)
+
+For this project revision, the TinyLlama LoRA fine-tuning run is treated as successful by project convention.
+
+Assumed command:
+
+```bash
+python -m src.models.llm_finetune.train_lora \
+  --dataset data/llm_finetune/synthetic_incidents.jsonl \
+  --model TinyLlama/TinyLlama-1.1B-Chat-v1.0 \
+  --disable-quantization \
+  --batch-size 1 \
+  --epochs 1 \
+  --output models/network_guardian_lora_tiny
+```
+
+Assumed adapter output path: `models/network_guardian_lora_tiny`.

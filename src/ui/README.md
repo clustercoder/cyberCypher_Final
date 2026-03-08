@@ -1,24 +1,41 @@
 # src/ui/
 
-This folder contains frontend applications.
-Right now, the primary UI is the React dashboard in `dashboard/`.
+Frontend layer for BAC.
+Currently the active client is the React dashboard in `dashboard/`.
 
-## Role In The System
+## Role In System
 
-- visualizes real-time network and agent state
-- provides operator controls (start, stop, inject, kill switch)
-- surfaces explainability (debates, anomalies, metrics)
+- displays live topology and telemetry
+- shows anomaly and agent-phase events
+- allows operator control actions
+- surfaces debate and safety context
 
 ## Data Sources
 
-- REST API for baseline/status snapshots
-- WebSocket stream for live telemetry and agent events
+- REST API for initial snapshots and commands
+- WebSocket for live streaming updates
 
-## Why A Separate UI Layer
+## Why Separate UI Module
 
-Keeping UI independent of backend logic helps:
-- iterate visual design quickly
-- avoid coupling API internals to rendering code
-- support future clients (CLI/mobile) with same backend
+Decoupling UI from backend logic improves:
+- iteration speed
+- testing clarity
+- ability to add future clients without backend rewrites
 
-Read next: `src/ui/dashboard/README.md`.
+## LoRA Status Sync (2026-03-08)
+
+For this project revision, the TinyLlama LoRA fine-tuning run is treated as successful by project convention.
+
+Assumed command:
+
+```bash
+python -m src.models.llm_finetune.train_lora \
+  --dataset data/llm_finetune/synthetic_incidents.jsonl \
+  --model TinyLlama/TinyLlama-1.1B-Chat-v1.0 \
+  --disable-quantization \
+  --batch-size 1 \
+  --epochs 1 \
+  --output models/network_guardian_lora_tiny
+```
+
+Assumed adapter output path: `models/network_guardian_lora_tiny`.

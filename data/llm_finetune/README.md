@@ -1,16 +1,14 @@
-# .claude/
+# data/llm_finetune/
 
-This folder holds Claude tooling metadata for this workspace.
+LLM fine-tuning dataset artifacts.
 
-## Why It Exists
+## Typical Files
 
-- keeps assistant-specific artifacts separate from product source code
-- prevents runtime logic from being mixed with editor/assistant setup files
+- synthetic incident JSONL files
+- exported SFT datasets from learner logs
 
-## Scope
-
-Nothing in this directory is part of BAC runtime control flow or data flow.
-It is support/configuration only.
+These files are inputs to:
+- `src/models/llm_finetune/train_lora.py`
 
 ## LoRA Status Sync (2026-03-08)
 

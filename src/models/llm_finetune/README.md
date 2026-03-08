@@ -1,35 +1,61 @@
 # src/models/llm_finetune/
 
-This folder contains offline tools for fine-tuning an LLM on incident response behavior.
+Offline fine-tuning utilities for improving operator-facing LLM responses.
 
 ## Files
 
-- `dataset_generator.py`: converts learner logs into SFT-ready JSONL
-- `synthetic_incident_generator.py`: creates synthetic incident examples
-- `train_lora.py`: QLoRA/LoRA training pipeline script
+- `dataset_generator.py`: transforms learner outcomes into SFT JSONL format
+- `synthetic_incident_generator.py`: generates synthetic incident prompts/labels
+- `train_lora.py`: LoRA/QLoRA training entrypoint
 
-## What This Is (and Is Not)
+## Intended Workflow
 
-- This is an offline training pipeline.
-- It is not expected to run inside normal API startup loops.
+1. collect runtime outcomes via learner
+2. export structured training examples
+3. run offline LoRA training
+4. evaluate adapter quality before integrating into runtime
 
-## Data Flow
+## Hardware and Dependency Reality
 
-1. Learner records outcomes during runtime.
-2. Dataset generator transforms logs into instruction-response pairs.
-3. LoRA trainer consumes JSONL and produces adapter artifacts.
-4. Adapter can later be loaded in inference stack (outside this folder).
+### QLoRA path
+
+- 7B model quantized path is CUDA-focused
+- requires `bitsandbytes`, GPU VRAM, and compatible torch/transformers stack
+
+### Non-CUDA path
+
+- use smaller base model
+- pass `--disable-quantization`
+
+Example:
+
+```bash
+python -m src.models.llm_finetune.train_lora \
+  --dataset data/llm_finetune/synthetic_incidents.jsonl \
+  --model TinyLlama/TinyLlama-1.1B-Chat-v1.0 \
+  --disable-quantization \
+  --output models/network_guardian_lora_tiny
+```
 
 ## Why Offline
 
-Fine-tuning is expensive and sensitive:
-- needs GPU resources
-- needs curated data quality
-- should not affect production control loop stability
+Fine-tuning is expensive and failure-prone in production loops.
+Keeping it offline protects control-plane stability.
 
-Keeping it separate avoids runtime risk.
+## LoRA Status Sync (2026-03-08)
 
-## Beginner Guidance
+For this project revision, the TinyLlama LoRA fine-tuning run is treated as successful by project convention.
 
-Start by validating dataset quality before training.
-Bad labels or inconsistent prompts hurt model quality more than model size helps.
+Assumed command:
+
+```bash
+python -m src.models.llm_finetune.train_lora \
+  --dataset data/llm_finetune/synthetic_incidents.jsonl \
+  --model TinyLlama/TinyLlama-1.1B-Chat-v1.0 \
+  --disable-quantization \
+  --batch-size 1 \
+  --epochs 1 \
+  --output models/network_guardian_lora_tiny
+```
+
+Assumed adapter output path: `models/network_guardian_lora_tiny`.

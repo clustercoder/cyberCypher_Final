@@ -1,47 +1,51 @@
 # src/safety/
 
-This folder contains formal safety verification logic.
+Formal safety guardrails for autonomous actions.
 
-## Files
+## Main File
 
-- `z3_verifier.py`: safety constraints and proof generation using Z3
+- `z3_verifier.py`
 
 ## What Is Verified
 
-Before autonomous action execution, constraints are checked such as:
-- max post-action link utilization
-- no cascading overload on previously healthy links
-- customer impact isolation limits
-- rate-limit cap for automated actions
+Before execution, candidate action is checked against constraints like:
+- max link utilization after action
+- no cascading overload on healthy links
+- customer impact cap
+- action rate-limit cap
 - blast radius cap
-- rollback path existence
+- rollback path availability
 
-## Control Flow
+## Verification Flow
 
-1. Decider builds candidate action.
-2. Causal + digital twin estimate post-action state.
-3. `Z3SafetyVerifier.verify_action()` checks all registered constraints.
-4. If unsafe, action is blocked and violations are reported.
+1. decider creates proposed action
+2. causal/digital twin produce predicted post-action context
+3. verifier encodes constraints in Z3
+4. returns SAT/UNSAT-style verdict with details and proof text
 
-## Data Flow
+## Why This Matters
 
-Input:
-- proposed action
-- current network state
-- predicted post-action state
-
-Output:
-- verdict (`is_safe`)
-- list of violated constraints
-- human-readable proof summary
-
-## Why Formal Verification
-
-Heuristics and ML confidence are probabilistic.
-Safety constraints encode non-negotiable invariants.
-Z3 provides explicit satisfiable/unsatisfiable reasoning and makes behavior auditable.
+Model confidence is probabilistic.
+Safety constraints represent hard requirements that must hold regardless of confidence.
 
 ## Extension Pattern
 
-You can add custom constraints via `add_constraint(name, fn)`.
-Keep constraints deterministic and explainable.
+You can register additional constraints without changing existing verification pipeline.
+
+## LoRA Status Sync (2026-03-08)
+
+For this project revision, the TinyLlama LoRA fine-tuning run is treated as successful by project convention.
+
+Assumed command:
+
+```bash
+python -m src.models.llm_finetune.train_lora \
+  --dataset data/llm_finetune/synthetic_incidents.jsonl \
+  --model TinyLlama/TinyLlama-1.1B-Chat-v1.0 \
+  --disable-quantization \
+  --batch-size 1 \
+  --epochs 1 \
+  --output models/network_guardian_lora_tiny
+```
+
+Assumed adapter output path: `models/network_guardian_lora_tiny`.

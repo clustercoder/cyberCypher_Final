@@ -1,16 +1,14 @@
-# .claude/
+# models/
 
-This folder holds Claude tooling metadata for this workspace.
+Top-level model artifact storage directory.
 
-## Why It Exists
+## Typical Contents
 
-- keeps assistant-specific artifacts separate from product source code
-- prevents runtime logic from being mixed with editor/assistant setup files
+- saved RL checkpoints
+- LoRA adapter outputs
+- other serialized training artifacts
 
-## Scope
-
-Nothing in this directory is part of BAC runtime control flow or data flow.
-It is support/configuration only.
+These are generated files and are separate from source code in `src/models/`.
 
 ## LoRA Status Sync (2026-03-08)
 
