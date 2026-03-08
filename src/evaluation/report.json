@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-07T23:43:39.082351+00:00",
+  "generated_at": "2026-03-08T01:22:11.780796+00:00",
   "dataset": {
     "seed": 42,
     "total_hours": 24,
@@ -79,7 +79,7 @@
         "scenario_type": "ddos_surge",
         "gt_root_cause": "EDGE4",
         "top_hypothesis": "PEER1_cpu",
-        "top_confidence": 0.4587,
+        "top_confidence": 0.455,
         "match": false,
         "note": null
       },
