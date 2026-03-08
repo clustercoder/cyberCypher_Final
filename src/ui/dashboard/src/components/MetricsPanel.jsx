@@ -28,7 +28,7 @@ function HealthBar({ health }) {
       <div className="bg-[var(--critical)] transition-all duration-500" style={{ width: `${criticalPct}%` }} />
       <div className="bg-[var(--high)] transition-all duration-500" style={{ width: `${highPct}%` }} />
       <div className="bg-[var(--medium)] transition-all duration-500" style={{ width: `${mediumPct}%` }} />
-      <div className="flex-1 bg-[rgba(83,216,106,0.24)]" />
+      <div className="flex-1 bg-[rgba(71,181,184,0.24)]" />
     </div>
   )
 }

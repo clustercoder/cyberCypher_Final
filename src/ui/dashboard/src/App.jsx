@@ -263,7 +263,7 @@ export default function App() {
 
   return (
     <div className="relative min-h-screen overflow-x-hidden pb-4">
-      <header className="sticky top-0 z-20 border-b border-[rgba(226,243,16,0.12)] bg-[rgba(4,7,4,0.86)] px-4 py-3 backdrop-blur-md">
+      <header className="sticky top-0 z-20 border-b border-[rgba(71,181,184,0.12)] bg-[rgba(4,8,8,0.86)] px-4 py-3 backdrop-blur-md">
         <div className="mx-auto flex max-w-[1520px] items-center gap-4">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
@@ -292,7 +292,7 @@ export default function App() {
                 ? 'border-[rgba(255,93,108,0.48)] text-[var(--critical)]'
                 : health?.overall_health === 'degraded'
                   ? 'border-[rgba(255,159,67,0.45)] text-[var(--high)]'
-                  : 'border-[rgba(83,216,106,0.42)] text-[var(--ok)]'
+                  : 'border-[rgba(71,181,184,0.42)] text-[var(--ok)]'
             }`}>
               {healthLabel}
             </span>

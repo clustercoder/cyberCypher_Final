@@ -10,7 +10,7 @@ import {
   YAxis,
 } from 'recharts'
 
-const CHART_COLORS = ['#e2f310', '#54f5c2', '#67b7ff', '#ff9f43', '#e182ff']
+const CHART_COLORS = ['#47B5B8', '#3D9EA0', '#67b7ff', '#ff9f43', '#e182ff']
 
 function formatTimeLabel(timestamp) {
   if (!timestamp) return '--:--:--'
@@ -55,7 +55,7 @@ function MetricChart({ title, data, keys, threshold, domain }) {
       </h3>
       <ResponsiveContainer width="100%" height={190}>
         <LineChart data={data} margin={{ top: 4, right: 8, left: -24, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="4 4" stroke="rgba(226,243,16,0.12)" />
+          <CartesianGrid strokeDasharray="4 4" stroke="rgba(71,181,184,0.12)" />
           <XAxis dataKey="ts" tick={{ fontSize: 10, fill: '#96a38a' }} tickLine={false} />
           <YAxis
             domain={domain || ['auto', 'auto']}
@@ -65,7 +65,7 @@ function MetricChart({ title, data, keys, threshold, domain }) {
           <Tooltip
             contentStyle={{
               background: 'rgba(10,14,10,0.95)',
-              border: '1px solid rgba(226,243,16,0.28)',
+              border: '1px solid rgba(71,181,184,0.28)',
               borderRadius: '0.65rem',
               fontSize: 11,
               color: '#dce4d2',

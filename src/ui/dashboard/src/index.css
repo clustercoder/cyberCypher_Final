@@ -5,16 +5,16 @@
 @tailwind utilities;
 
 :root {
-  --bg: #050605;
-  --bg-soft: #0b100b;
-  --panel: rgba(12, 16, 12, 0.9);
-  --panel-border: rgba(189, 203, 128, 0.2);
-  --panel-border-strong: rgba(189, 203, 128, 0.34);
+  --bg: #050809;
+  --bg-soft: #080e0e;
+  --panel: rgba(8, 14, 14, 0.9);
+  --panel-border: rgba(71, 181, 184, 0.2);
+  --panel-border-strong: rgba(71, 181, 184, 0.34);
   --headline: #f7f9f0;
   --text: #d7dfcd;
-  --muted: #98a68d;
-  --accent: #bccb80;
-  --accent-2: #86baa9;
+  --muted: #8aa6a6;
+  --accent: #47B5B8;
+  --accent-2: #3D9EA0;
   --critical: #d67f89;
   --high: #d2a17a;
   --medium: #c8b27b;
@@ -32,9 +32,9 @@ body {
   color: var(--text);
   font-family: 'Manrope', 'Segoe UI', sans-serif;
   background:
-    radial-gradient(circle at 12% 14%, rgba(188, 203, 128, 0.04), transparent 30%),
-    radial-gradient(circle at 86% 5%, rgba(134, 186, 169, 0.035), transparent 34%),
-    linear-gradient(165deg, #040604 0%, #070b07 52%, #050605 100%);
+    radial-gradient(circle at 12% 14%, rgba(71, 181, 184, 0.04), transparent 30%),
+    radial-gradient(circle at 86% 5%, rgba(61, 94, 93, 0.035), transparent 34%),
+    linear-gradient(165deg, #040809 0%, #070b0b 52%, #050809 100%);
 }
 
 #root {
@@ -64,16 +64,16 @@ code,
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(148, 163, 138, 0.11);
+  background: rgba(61, 94, 93, 0.11);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(226, 243, 16, 0.32);
+  background: rgba(71, 181, 184, 0.32);
   border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(226, 243, 16, 0.48);
+  background: rgba(71, 181, 184, 0.52);
 }
 
 .panel {
@@ -106,7 +106,7 @@ code,
 }
 
 .panel-live {
-  border-color: rgba(84, 245, 194, 0.3) !important;
+  border-color: rgba(71, 181, 184, 0.3) !important;
 }
 
 .magic-border-beam {
@@ -139,16 +139,16 @@ code,
 }
 
 .shimmer-button-primary {
-  background: #bccb80;
-  color: #10150b;
-  border: 1px solid rgba(188, 203, 128, 0.42);
+  background: #47B5B8;
+  color: #071312;
+  border: 1px solid rgba(71, 181, 184, 0.42);
   box-shadow: none;
 }
 
 .shimmer-button-secondary {
   background: rgba(255, 255, 255, 0.02);
   color: var(--text);
-  border: 1px solid rgba(189, 203, 128, 0.24);
+  border: 1px solid rgba(71, 181, 184, 0.24);
 }
 
 .shimmer-button-danger {
@@ -251,7 +251,7 @@ code,
   display: inline-flex;
   align-items: center;
   border-radius: 9999px;
-  border: 1px solid rgba(189, 203, 128, 0.24);
+  border: 1px solid rgba(71, 181, 184, 0.24);
   background: rgba(255, 255, 255, 0.01);
   padding: 0.125rem 0.5rem;
   font-size: 0.625rem;
@@ -261,14 +261,14 @@ code,
 
 .ui-panel-block {
   border-radius: 0.75rem;
-  border: 1px solid rgba(189, 203, 128, 0.14);
+  border: 1px solid rgba(71, 181, 184, 0.14);
   background: rgba(255, 255, 255, 0.01);
   padding: 0.75rem;
 }
 
 .ui-empty {
   border-radius: 0.75rem;
-  border: 1px solid rgba(189, 203, 128, 0.14);
+  border: 1px solid rgba(71, 181, 184, 0.14);
   background: rgba(255, 255, 255, 0.01);
   padding: 1rem 0.75rem;
   text-align: center;
@@ -279,8 +279,8 @@ code,
 .ui-field {
   width: 100%;
   border-radius: 0.5rem;
-  border: 1px solid rgba(189, 203, 128, 0.28);
-  background: rgba(7, 10, 7, 0.9);
+  border: 1px solid rgba(71, 181, 184, 0.28);
+  background: rgba(5, 10, 10, 0.9);
   padding: 0.5rem 0.625rem;
   font-size: 0.875rem;
   color: var(--text);
@@ -297,7 +297,7 @@ code,
 
 .ui-chip {
   border-radius: 9999px;
-  border: 1px solid rgba(189, 203, 128, 0.24);
+  border: 1px solid rgba(71, 181, 184, 0.24);
   padding: 0.25rem 0.5rem;
   font-size: 0.625rem;
   color: var(--muted);
@@ -305,17 +305,17 @@ code,
 }
 
 .ui-chip:hover {
-  border-color: rgba(189, 203, 128, 0.4);
+  border-color: rgba(71, 181, 184, 0.44);
 }
 
 .ui-chip-active {
   border-color: var(--accent);
-  background: rgba(188, 203, 128, 0.14);
+  background: rgba(71, 181, 184, 0.14);
   color: var(--accent);
 }
 
 .ui-row {
-  border-bottom: 1px solid rgba(189, 203, 128, 0.12);
+  border-bottom: 1px solid rgba(71, 181, 184, 0.12);
 }
 
 .ui-tabs {
@@ -330,7 +330,7 @@ code,
   align-items: flex-start;
   min-width: 170px;
   border-radius: 0.7rem;
-  border: 1px solid rgba(189, 203, 128, 0.2);
+  border: 1px solid rgba(71, 181, 184, 0.2);
   background: rgba(255, 255, 255, 0.01);
   padding: 0.5rem 0.75rem;
   color: var(--muted);
@@ -341,13 +341,13 @@ code,
 }
 
 .ui-tab:hover {
-  border-color: rgba(189, 203, 128, 0.36);
+  border-color: rgba(71, 181, 184, 0.4);
   color: var(--text);
 }
 
 .ui-tab-active {
-  border-color: rgba(189, 203, 128, 0.48);
-  background: rgba(188, 203, 128, 0.08);
+  border-color: rgba(71, 181, 184, 0.52);
+  background: rgba(71, 181, 184, 0.08);
   color: var(--headline);
 }
 
@@ -421,7 +421,7 @@ code,
 @keyframes flash-value {
   0% {
     color: var(--accent);
-    text-shadow: 0 0 9px rgba(226, 243, 16, 0.46);
+    text-shadow: 0 0 9px rgba(71, 181, 184, 0.5);
   }
   100% {
     color: inherit;

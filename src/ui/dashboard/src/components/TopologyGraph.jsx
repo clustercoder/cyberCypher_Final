@@ -3,8 +3,8 @@ import * as d3 from 'd3'
 
 const NODE_COLOR = {
   core: '#7fa4c8',
-  aggregation: '#86baa9',
-  edge: '#bccb80',
+  aggregation: '#3D5E5D',
+  edge: '#47B5B8',
   peering: '#d2a17a',
 }
 
@@ -76,7 +76,7 @@ function fmt(value, digits = 1, suffix = '') {
 function linkBaseStyle(utilizationPct) {
   if (utilizationPct == null) {
     return {
-      color: 'rgba(152,166,141,0.28)',
+      color: 'rgba(61,94,93,0.28)',
       width: 1.6,
       opacity: 0.5,
     }
@@ -92,7 +92,7 @@ function linkBaseStyle(utilizationPct) {
 
   if (utilizationPct >= 70) {
     return {
-      color: '#b9c78f',
+      color: '#47B5B8',
       width: 2.1,
       opacity: 0.75,
     }
@@ -100,14 +100,14 @@ function linkBaseStyle(utilizationPct) {
 
   if (utilizationPct >= 50) {
     return {
-      color: 'rgba(188,203,128,0.5)',
+      color: 'rgba(71,181,184,0.5)',
       width: 1.9,
       opacity: 0.65,
     }
   }
 
   return {
-    color: 'rgba(152,166,141,0.34)',
+    color: 'rgba(61,94,93,0.34)',
     width: 1.7,
     opacity: 0.55,
   }
@@ -226,7 +226,7 @@ export default function TopologyGraph({ topology, anomalies = [], telemetry = nu
       .join('text')
       .attr('font-size', 7)
       .attr('text-anchor', 'middle')
-      .attr('fill', 'rgba(152,166,141,0.8)')
+      .attr('fill', 'rgba(71,181,184,0.65)')
       .attr('pointer-events', 'none')
 
     const tooltip = d3
@@ -241,7 +241,7 @@ export default function TopologyGraph({ topology, anomalies = [], telemetry = nu
       .style('z-index', 9999)
       .style('max-width', '260px')
       .style('border-radius', '10px')
-      .style('border', '1px solid rgba(189,203,128,0.28)')
+      .style('border', '1px solid rgba(71,181,184,0.28)')
       .style('background', 'rgba(8,10,8,0.96)')
       .style('padding', '8px 10px')
       .style('font-size', '11px')
@@ -283,7 +283,7 @@ export default function TopologyGraph({ topology, anomalies = [], telemetry = nu
           const anomaly = map[node.id]
           return anomaly ? SEVERITY_COLOR[anomaly.severity] : NODE_COLOR[node.node_type] || '#98a68d'
         })
-        .attr('stroke', node => (map[node.id] ? '#f7f9f0' : 'rgba(189,203,128,0.34)'))
+        .attr('stroke', node => (map[node.id] ? '#f7f9f0' : 'rgba(71,181,184,0.34)'))
         .attr('filter', node => {
           const anomaly = map[node.id]
           return anomaly ? `url(#topo-glow-${anomaly.severity})` : null
@@ -317,7 +317,7 @@ export default function TopologyGraph({ topology, anomalies = [], telemetry = nu
           const target = link.target?.id || link.target
           const anomaly = linkAnomaly(map, source, target)
           if (anomaly) return SEVERITY_COLOR[anomaly.severity]
-          return 'rgba(152,166,141,0.82)'
+          return 'rgba(71,181,184,0.65)'
         })
         .attr('opacity', link => {
           const source = link.source?.id || link.source
@@ -427,7 +427,7 @@ export default function TopologyGraph({ topology, anomalies = [], telemetry = nu
         const anomaly = map[node.id]
         return anomaly ? SEVERITY_COLOR[anomaly.severity] : NODE_COLOR[node.node_type] || '#98a68d'
       })
-      .attr('stroke', node => (map[node.id] ? '#f7f9f0' : 'rgba(189,203,128,0.34)'))
+      .attr('stroke', node => (map[node.id] ? '#f7f9f0' : 'rgba(71,181,184,0.34)'))
       .attr('filter', node => {
         const anomaly = map[node.id]
         return anomaly ? `url(#topo-glow-${anomaly.severity})` : null
@@ -489,7 +489,7 @@ export default function TopologyGraph({ topology, anomalies = [], telemetry = nu
         const source = link.source?.id || link.source
         const target = link.target?.id || link.target
         const anomaly = linkAnomaly(map, source, target)
-        return anomaly ? SEVERITY_COLOR[anomaly.severity] : 'rgba(152,166,141,0.82)'
+        return anomaly ? SEVERITY_COLOR[anomaly.severity] : 'rgba(71,181,184,0.65)'
       })
       .attr('opacity', link => {
         const source = link.source?.id || link.source
@@ -523,7 +523,7 @@ export default function TopologyGraph({ topology, anomalies = [], telemetry = nu
       </div>
       <svg
         ref={svgRef}
-        className="h-full w-full rounded-xl border border-[rgba(189,203,128,0.14)] bg-[rgba(255,255,255,0.01)]"
+        className="h-full w-full rounded-xl border border-[rgba(71,181,184,0.14)] bg-[rgba(255,255,255,0.01)]"
       />
     </div>
   )
